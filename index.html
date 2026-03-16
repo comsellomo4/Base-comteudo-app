@@ -1,0 +1,468 @@
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI",sans-serif;}
+.app{background:#0B0D4D;min-height:100vh;display:flex;justify-content:center;color:white;}
+.tela{
+width:100%;
+max-width:390px;
+min-height:100vh;
+padding:25px;
+padding-bottom:100px;
+margin:auto;
+animation:entrada .7s ease;
+}
+@keyframes entrada{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+.header{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.logo {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.logo img {
+  width: auto;       /* largura automática */
+  height: 100%;      /* altura igual ao contêiner */
+  max-width: 100%;   /* nunca ultrapassa o contêiner */
+  object-fit: contain; /* mantém proporção da imagem */
+}
+.logo img{width:100%;height:100%;object-fit:cover;}
+.nomeApp{font-size:24px;font-weight:bold;}.nomeApp span{color:#FF9800;}
+.slogan{background:#FF9800;color:#0B0D4D;padding:9px;border-radius:10px;text-align:center;margin-bottom:22px;font-weight:700;font-size:13px;letter-spacing:.5px;}
+.titulo{border:2px solid #FF9800;border-radius:30px;padding:10px 16px;text-align:center;font-weight:bold;margin-bottom:20px;font-size:14px;}
+.steps{display:flex;gap:5px;margin-bottom:22px;}.step{flex:1;height:4px;border-radius:4px;background:rgba(255,255,255,0.15);transition:.3s;}.step.ativo{background:#FF9800;}
+.page{display:none;}.page.ativa{display:block;}
+.form{display:flex;flex-direction:column;gap:16px;}
+.inp{display:flex;flex-direction:column;}.inp label{font-size:13px;opacity:.8;margin-bottom:4px;}
+.inp input{background:none;border:none;border-bottom:2px solid rgba(255,255,255,0.3);padding:8px 0;color:white;font-size:14px;outline:none;transition:.3s;}
+.inp input:focus{border-bottom-color:#FF9800;}
+.pergunta{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:15px;margin-bottom:14px;transition:.3s;}
+.pergunta:hover{background:rgba(255,255,255,0.08);}
+.pergunta p{font-size:14px;margin-bottom:10px;line-height:1.5;}
+.botoes{display:flex;gap:10px;}
+.btn-op{flex:1;border:2px solid #FF9800;background:none;color:#fff;padding:8px;border-radius:20px;font-weight:600;cursor:pointer;transition:.25s;font-size:14px;}
+.btn-op:hover{background:#FF9800;color:#0B0D4D;}
+.btn-op.ativo{
+background:#FF9800;
+color:#0B0D4D;
+box-shadow:0 0 0 2px rgba(255,152,0,0.4);
+}
+.resposta{margin-top:8px;font-size:13px;opacity:0;transform:translateY(5px);transition:.35s;line-height:1.5;}
+.resposta.show{opacity:1;transform:translateY(0);}
+textarea{width:100%;margin-top:8px;background:none;border:2px solid #FF9800;border-radius:10px;padding:8px;color:white;font-size:13px;outline:none;resize:none;height:70px;}
+.barra{position:sticky;bottom:0;background:#0B0D4D;padding:16px 0 8px;margin-top:20px;}
+.btn-cont{width:100%;background:#FF9800;border:none;color:#0B0D4D;padding:14px;border-radius:30px;font-weight:bold;font-size:15px;cursor:pointer;transition:.3s;}
+.btn-cont:hover{box-shadow:0 10px 25px rgba(255,152,0,0.4);transform:translateY(-1px);}
+.btn-vol{background:none;border:2px solid rgba(255,255,255,0.3);color:white;width:100%;padding:10px;border-radius:30px;font-size:14px;cursor:pointer;margin-top:8px;transition:.3s;}
+.btn-vol:hover{border-color:#FF9800;color:#FF9800;}
+.resumo-item{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.08);font-size:14px;}
+.resumo-item span:first-child{opacity:.7;}.resumo-item span:last-child{font-weight:600;text-align:right;max-width:60%;}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;}
+.badge.ok{background:rgba(76,175,80,0.2);color:#81C784;}.badge.warn{background:rgba(255,152,0,0.2);color:#FFB74D;}
+.tela-final{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;text-align:center;padding:20px 0;}
+.final-logo{
+width:60px;
+height:60px;
+display:flex;
+align-items:center;
+justify-content:center;
+margin-bottom:16px;
+}
+
+.final-logo img{
+width:100%;
+height:100%;
+object-fit:contain;
+}
+.final-titulo{font-size:26px;font-weight:bold;margin-bottom:20px;}.final-titulo span{color:#FF9800;}
+.status-box{padding:18px 28px;border-radius:15px;font-weight:bold;font-size:18px;margin-bottom:20px;width:100%;}
+.status-ok{background:#1B8E3E;}.status-warn{background:#C62828;}
+.final-texto{font-size:14px;opacity:.9;line-height:1.7;margin-bottom:20px;}
+.lembrete{background:#FF9800;color:#0B0D4D;padding:12px;border-radius:10px;font-size:13px;font-weight:600;line-height:1.5;margin-bottom:16px;}
+.btn-pdf{width:100%;background:#FF9800;border:none;color:#0B0D4D;padding:14px;border-radius:30px;font-weight:bold;font-size:15px;cursor:pointer;transition:.3s;margin-bottom:10px;}
+.btn-pdf:hover{box-shadow:0 10px 25px rgba(255,152,0,0.4);transform:translateY(-1px);}
+.btn-gmail{width:100%;background:white;border:none;color:#0B0D4D;padding:14px;border-radius:30px;font-weight:bold;font-size:15px;cursor:pointer;transition:.3s;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-gmail:hover{box-shadow:0 10px 25px rgba(255,255,255,0.2);transform:translateY(-1px);}
+.btn-novo{width:100%;background:none;border:2px solid rgba(255,255,255,0.3);color:white;padding:12px;border-radius:30px;font-size:14px;cursor:pointer;transition:.3s;}
+.btn-novo:hover{border-color:#FF9800;color:#FF9800;}
+.info-gmail{font-size:12px;opacity:.6;margin-bottom:16px;line-height:1.6;}
+</style>
+
+<div class="app"><div class="tela">
+<div class="header"><div class="logo"><img src="https://i.postimg.cc/BbP6W58Z/Picsart-26-03-12-20-29-22-255.png"></div><div class="nomeApp">VIAGEM <span>SEGURA</span></div></div>
+<div class="slogan">SEGURANÇA • MODERNIDADE • RAPIDEZ</div>
+<div class="steps" id="steps"></div>
+
+<!-- P1 -->
+<div class="page ativa" id="p1">
+  <div class="titulo">CHECKLIST — Planejamento da viagem</div>
+  <div class="form">
+    <div class="inp"><label>Data da viagem</label><input type="date" id="data"></div>
+    <div class="inp"><label>Origem</label><input type="text" id="origem" placeholder="Cidade de origem"></div>
+    <div class="inp"><label>Destino</label><input type="text" id="destino" placeholder="Cidade de destino"></div>
+    <div class="inp"><label>Veículo (modelo / placa)</label><input type="text" id="veiculo" placeholder="Ex: HB20 / ABC-1234"></div>
+    <div class="inp"><label>Hora de saída</label><input type="time" id="saida"></div>
+    <div class="inp"><label>Hora estimada de chegada</label><input type="time" id="chegada"></div>
+    <div class="inp"><label>Parada para almoço (local / hora)</label><input type="text" id="parada" placeholder="Ex: Posto KM 120 / 12h"></div>
+    <div class="inp"><label>Quantidade de ocupantes</label><input type="number" id="ocupantes" min="1" max="20"></div>
+  </div>
+  <div class="barra"><button class="btn-cont" onclick="ir(2)">CONTINUAR →</button></div>
+</div>
+
+<!-- P2 -->
+<div class="page" id="p2">
+  <div class="titulo">DOCUMENTAÇÃO E CONDUTOR</div>
+  <div class="pergunta"><p>Documentos do veículo estão em dia? (Licenciamento e CRLV)</p><div class="botoes"><button class="btn-op" onclick="resp('doc','sim')">Sim</button><button class="btn-op" onclick="resp('doc','nao')">Não</button></div><div class="resposta" id="doc"></div></div>
+  <div class="pergunta"><p>CNH está dentro da validade?</p><div class="botoes"><button class="btn-op" onclick="resp('cnh','sim')">Sim</button><button class="btn-op" onclick="resp('cnh','nao')">Não</button></div><div class="resposta" id="cnh"></div></div>
+  <div class="pergunta"><p>Exame toxicológico está em dia?</p><div class="botoes"><button class="btn-op" onclick="resp('tox','sim')">Sim</button><button class="btn-op" onclick="resp('tox','nao')">Não</button></div><div class="resposta" id="tox"></div></div>
+  <div class="pergunta"><p>Condutor está descansado e em boas condições físicas?</p><div class="botoes"><button class="btn-op" onclick="resp('saude','sim')">Sim</button><button class="btn-op" onclick="resp('saude','nao')">Não</button></div><div class="resposta" id="saude"></div></div>
+  <div class="barra"><button class="btn-cont" onclick="ir(3)">CONTINUAR →</button><button class="btn-vol" onclick="ir(1)">← Voltar</button></div>
+</div>
+
+<!-- P3 -->
+<div class="page" id="p3">
+  <div class="titulo">INSPEÇÃO MECÂNICA E TÉCNICA</div>
+  <div class="pergunta"><p>Pneus calibrados e sem desgaste excessivo (incluindo estepe)?</p><div class="botoes"><button class="btn-op" onclick="resp('pneu','sim')">Sim</button><button class="btn-op" onclick="resp('pneu','nao')">Não</button></div><div class="resposta" id="pneu"></div></div>
+  <div class="pergunta"><p>Sistema de freios funcionando corretamente?</p><div class="botoes"><button class="btn-op" onclick="resp('freio','sim')">Sim</button><button class="btn-op" onclick="resp('freio','nao')">Não</button></div><div class="resposta" id="freio"></div></div>
+  <div class="pergunta"><p>Níveis de óleo do motor e arrefecimento estão corretos?</p><div class="botoes"><button class="btn-op" onclick="resp('fluido','sim')">Sim</button><button class="btn-op" onclick="resp('fluido','nao')">Não</button></div><div class="resposta" id="fluido"></div></div>
+  <div class="pergunta"><p>Suspensão e direção estão estáveis e sem ruídos?</p><div class="botoes"><button class="btn-op" onclick="resp('suspensao','sim')">Sim</button><button class="btn-op" onclick="resp('suspensao','nao')">Não</button></div><div class="resposta" id="suspensao"></div></div>
+  <div class="pergunta"><p>Iluminação funcionando (faróis, setas, freio e ré)?</p><div class="botoes"><button class="btn-op" onclick="resp('luz','sim')">Sim</button><button class="btn-op" onclick="resp('luz','nao')">Não</button></div><div class="resposta" id="luz"></div></div>
+  <div class="pergunta"><p>Se for veículo híbrido/elétrico: cabos e baterias em bom estado?</p><div class="botoes"><button class="btn-op" onclick="resp('eletrico','sim')">Sim</button><button class="btn-op" onclick="resp('eletrico','nao')">Não</button></div><div class="resposta" id="eletrico"></div></div>
+  <div class="barra"><button class="btn-cont" onclick="ir(4)">CONTINUAR →</button><button class="btn-vol" onclick="ir(2)">← Voltar</button></div>
+</div>
+
+<!-- P4 -->
+<div class="page" id="p4">
+  <div class="titulo">PLANEJAMENTO DE ROTA</div>
+  <div class="pergunta"><p>Condições da via foram verificadas na Pesquisa CNT?</p><div class="botoes"><button class="btn-op" onclick="resp('via','sim')">Sim</button><button class="btn-op" onclick="resp('via','nao')">Não</button></div><div class="resposta" id="via"></div></div>
+  <div class="pergunta"><p>Pontos críticos foram identificados (buracos, erosões ou queda de barreira)?</p><div class="botoes"><button class="btn-op" onclick="respCritico('sim')">Sim</button><button class="btn-op" onclick="respCritico('nao')">Não</button></div><div class="resposta" id="critico"></div><div id="campoCritico" style="display:none;"><textarea id="txtCritico" placeholder="Descreva o ponto crítico encontrado..."></textarea></div></div>
+  <div class="pergunta"><p>A rota escolhida possui menor risco de acidentes graves?</p><div class="botoes"><button class="btn-op" onclick="respRota('sim')">Sim</button><button class="btn-op" onclick="respRota('nao')">Não</button></div><div class="resposta" id="rota"></div><div id="campoRota" style="display:none;"><textarea id="txtRota" placeholder="Descreva a rota segura escolhida..."></textarea></div></div>
+  <div class="pergunta"><p>Foram definidos pontos de apoio (PPD) para parada e descanso?</p><div class="botoes"><button class="btn-op" onclick="resp('ppd','sim')">Sim</button><button class="btn-op" onclick="resp('ppd','nao')">Não</button></div><div class="resposta" id="ppd"></div></div>
+  <div class="pergunta"><p>Para veículos elétricos: pontos de recarga foram mapeados conforme autonomia?</p><div class="botoes"><button class="btn-op" onclick="resp('recarga','sim')">Sim</button><button class="btn-op" onclick="resp('recarga','nao')">Não</button></div><div class="resposta" id="recarga"></div></div>
+  <div class="barra"><button class="btn-cont" onclick="ir(5)">CONTINUAR →</button><button class="btn-vol" onclick="ir(3)">← Voltar</button></div>
+</div>
+
+<!-- P5 -->
+<div class="page" id="p5">
+  <div class="titulo">DURANTE O PERCURSO (Segurança Ativa)</div>
+  <div class="pergunta"><p>Compromisso em seguir limites de velocidade e sinalização?</p><div class="botoes"><button class="btn-op" onclick="resp('sinal','sim')">Sim</button><button class="btn-op" onclick="resp('sinal','nao')">Não</button></div><div class="resposta" id="sinal"></div></div>
+  <div class="pergunta"><p>Ultrapassagens serão feitas apenas em locais permitidos e seguros?</p><div class="botoes"><button class="btn-op" onclick="resp('ultra','sim')">Sim</button><button class="btn-op" onclick="resp('ultra','nao')">Não</button></div><div class="resposta" id="ultra"></div></div>
+  <div class="pergunta"><p>Celular guardado e evitar distrações ao dirigir?</p><div class="botoes"><button class="btn-op" onclick="resp('distracao','sim')">Sim</button><button class="btn-op" onclick="resp('distracao','nao')">Não</button></div><div class="resposta" id="distracao"></div></div>
+  <div class="pergunta"><p>A carga está dentro do limite permitido do veículo?</p><div class="botoes"><button class="btn-op" onclick="respCarga('sim')">Sim</button><button class="btn-op" onclick="respCarga('nao')">Não</button></div><div class="resposta" id="carga"></div><div id="campoCarga" style="display:none;"><textarea placeholder="Informe peso aproximado da carga ou situação..."></textarea></div></div>
+  <div class="pergunta"><p>Paradas programadas a cada 2 ou 3 horas de viagem?</p><div class="botoes"><button class="btn-op" onclick="respPausa('sim')">Sim</button><button class="btn-op" onclick="respPausa('nao')">Não</button></div><div class="resposta" id="pausa"></div><div id="campoPausa" style="display:none;"><textarea placeholder="Informe onde serão feitas as pausas..."></textarea></div></div>
+  <div class="barra"><button class="btn-cont" onclick="ir(6)">VER RESUMO →</button><button class="btn-vol" onclick="ir(4)">← Voltar</button></div>
+</div>
+
+<!-- P6 -->
+<div class="page" id="p6">
+  <div class="titulo">RESUMO DA VIAGEM</div>
+  <div id="resumo-conteudo"></div>
+  <div class="barra"><button class="btn-cont" onclick="ir(7)">CONCLUIR →</button><button class="btn-vol" onclick="ir(5)">← Voltar</button></div>
+</div>
+
+<!-- P7 -->
+<div class="page" id="p7">
+  <div class="tela-final">
+    <div class="final-logo">
+<img src="https://i.postimg.cc/BbP6W58Z/Picsart-26-03-12-20-29-22-255.png">
+</div>
+    <div class="final-titulo">VIAGEM <span>SEGURA</span></div>
+    <div id="status-box" class="status-box status-ok">✔ VIAGEM APROVADA</div>
+    <div class="final-texto">Seu checklist foi concluído com sucesso.<br>Faça o download do PDF e envie para o seu e-mail.</div>
+    <div class="lembrete">⚠ Em rodovias de pista simples, paciência e planejamento são suas melhores ferramentas de segurança.</div>
+    <div class="info-gmail">Clique em "Baixar PDF" para salvar o arquivo, depois clique em "Enviar pelo Gmail" para abrir o e-mail já endereçado — anexe o PDF e envie.</div>
+    <button class="btn-pdf" onclick="gerarPDF()">⬇ BAIXAR PDF DO CHECKLIST</button>
+    <button class="btn-gmail" onclick="abrirGmail()">✉ ENVIAR PELO GMAIL</button>
+    <button class="btn-novo" onclick="novo()">+ Novo Checklist</button>
+  </div>
+</div>
+
+</div></div>
+
+<script>
+var pg=1,res={},TOTAL=7;
+
+function buildSteps(){
+  var s=document.getElementById('steps');s.innerHTML='';
+  for(var i=1;i<TOTAL;i++){
+    var d=document.createElement('div');
+    d.className='step'+(i<=pg?' ativo':'');
+    s.appendChild(d);
+  }
+}
+buildSteps();
+
+function ir(n){
+  document.getElementById('p'+pg).classList.remove('ativa');
+  pg=n;
+  document.getElementById('p'+n).classList.add('ativa');
+  buildSteps();
+  if(n===6)gerarResumo();
+  if(n===7)calcularResultado();
+  window.scrollTo(0,0);
+}
+
+var msgs={
+  doc:{sim:'✔ Documentação em dia.',nao:'⚠ Regularize o licenciamento e CRLV.'},
+  cnh:{sim:'✔ CNH válida.',nao:'⚠ Não é permitido dirigir com CNH vencida.'},
+  tox:{sim:'✔ Toxicológico em dia.',nao:'⚠ Regularize o exame antes da viagem.'},
+  saude:{sim:'✔ Condutor descansado.',nao:'⚠ Recomendamos descansar antes de sair.'},
+  pneu:{sim:'✔ Pneus em boas condições.',nao:'⚠ Verifique calibragem e desgaste.'},
+  freio:{sim:'✔ Freios funcionando.',nao:'⚠ Freios essenciais — faça revisão.'},
+  fluido:{sim:'✔ Fluidos no nível correto.',nao:'⚠ Verifique óleo e arrefecimento.'},
+  suspensao:{sim:'✔ Suspensão estável.',nao:'⚠ Ruídos indicam necessidade de manutenção.'},
+  luz:{sim:'✔ Iluminação funcionando.',nao:'⚠ Verifique lâmpadas e sistema elétrico.'},
+  eletrico:{sim:'✔ Sistema elétrico em ordem.',nao:'⚠ Cabos/baterias — verificar com técnico.'},
+  via:{sim:'✔ Condições da via verificadas.',nao:'⚠ Consulte a Pesquisa CNT.'},
+  ppd:{sim:'✔ Pontos de apoio definidos.',nao:'⚠ Planeje paradas para descanso.'},
+  recarga:{sim:'✔ Recargas mapeadas.',nao:'⚠ Verifique estações de recarga.'},
+  sinal:{sim:'✔ Compromisso com sinalização.',nao:'⚠ Respeitar sinalização reduz acidentes.'},
+  ultra:{sim:'✔ Ultrapassagens seguras planejadas.',nao:'⚠ Ultrapassagens perigosas causam acidentes.'},
+  distracao:{sim:'✔ Direção sem distrações.',nao:'⚠ Evite celular ao volante.'}
+};
+
+var nomes={doc:'Documentação',cnh:'CNH',tox:'Toxicológico',saude:'Condutor',pneu:'Pneus',freio:'Freios',fluido:'Fluidos',suspensao:'Suspensão',luz:'Iluminação',eletrico:'Sist. Elétrico',via:'Cond. da via',critico:'Pontos críticos',rota:'Rota segura',ppd:'Pontos de apoio',recarga:'Recarga',sinal:'Sinalização',ultra:'Ultrapassagens',distracao:'Sem distrações',carga:'Carga',pausa:'Pausas'};
+
+var grupos=[
+  {titulo:'Documentação e Condutor',itens:['doc','cnh','tox','saude']},
+  {titulo:'Inspeção Mecânica',itens:['pneu','freio','fluido','suspensao','luz','eletrico']},
+  {titulo:'Planejamento de Rota',itens:['via','critico','rota','ppd','recarga']},
+  {titulo:'Durante o Percurso',itens:['sinal','ultra','distracao','carga','pausa']}
+];
+
+function mostrar(id,msg){var el=document.getElementById(id);el.innerHTML=msg;el.classList.add('show');}
+function fmt(v){return v||'—';}
+function resp(tipo,r){
+  res[tipo]=r;
+
+  var botoes=document.querySelectorAll('[onclick*="resp(\''+tipo+'\'"]');
+  botoes.forEach(function(b){b.classList.remove('ativo');});
+
+  event.target.classList.add('ativo');
+
+  mostrar(tipo,msgs[tipo][r]);
+
+  if(tipo==='tox' && r==='nao'){
+    setTimeout(function(){
+      window.open('https://www.google.com/maps/search/exame+toxicológico+laboratório','_blank');
+    },800);
+  }
+}
+function respCritico(r){res['critico']=r;var c=document.getElementById('campoCritico');if(r==='sim'){mostrar('critico','⚠ Descreva os pontos críticos abaixo.');c.style.display='block';}else{mostrar('critico','✔ Nenhum ponto crítico.');c.style.display='none';}}
+function respRota(r){res['rota']=r;var c=document.getElementById('campoRota');if(r==='sim'){mostrar('rota','✔ Descreva a rota segura abaixo.');c.style.display='block';}else{mostrar('rota','⚠ Revise a rota para reduzir riscos.');c.style.display='none';}}
+function respCarga(r){res['carga']=r;var c=document.getElementById('campoCarga');if(r==='sim'){mostrar('carga','✔ Carga dentro do limite.');c.style.display='none';}else{mostrar('carga','⚠ Informe a situação da carga.');c.style.display='block';}}
+function respPausa(r){res['pausa']=r;var c=document.getElementById('campoPausa');if(r==='sim'){mostrar('pausa','✔ Pausas programadas.');c.style.display='none';}else{mostrar('pausa','⚠ Informe onde fará as pausas.');c.style.display='block';}}
+
+function gerarResumo(){
+  var d=document.getElementById('resumo-conteudo');
+  var data=document.getElementById('data').value;
+  if(data){var p=data.split('-');data=p[2]+'/'+p[1]+'/'+p[0];}
+  var h='<div class="resumo-item"><span>Data</span><span>'+fmt(data)+'</span></div>';
+  h+='<div class="resumo-item"><span>Origem → Destino</span><span>'+fmt(document.getElementById('origem').value)+' → '+fmt(document.getElementById('destino').value)+'</span></div>';
+  h+='<div class="resumo-item"><span>Veículo</span><span>'+fmt(document.getElementById('veiculo').value)+'</span></div>';
+  h+='<div class="resumo-item"><span>Saída / Chegada</span><span>'+fmt(document.getElementById('saida').value)+' / '+fmt(document.getElementById('chegada').value)+'</span></div>';
+  h+='<div class="resumo-item"><span>Ocupantes</span><span>'+fmt(document.getElementById('ocupantes').value)+'</span></div>';
+  h+='<div style="height:1px;background:rgba(255,152,0,.3);margin:14px 0;"></div>';
+  grupos.forEach(function(g){
+    h+='<div style="font-size:12px;color:#FF9800;font-weight:700;margin:14px 0 8px;letter-spacing:.5px;">'+g.titulo.toUpperCase()+'</div>';
+    g.itens.forEach(function(c){
+      var r=res[c];
+      var badge=r==='sim'?'<span class="badge ok">OK</span>':r==='nao'?'<span class="badge warn">Pendente</span>':'<span style="opacity:.4;font-size:12px;">—</span>';
+      h+='<div class="resumo-item"><span>'+nomes[c]+'</span><span>'+badge+'</span></div>';
+    });
+  });
+  d.innerHTML=h;
+}
+
+function calcularResultado(){
+  var criticos=['doc','cnh','freio','pneu'];
+  var pendente=false;
+  criticos.forEach(function(c){if(res[c]==='nao')pendente=true;});
+  var box=document.getElementById('status-box');
+  if(pendente){box.className='status-box status-warn';box.innerHTML='⚠ REVISAR ITENS DE SEGURANÇA';}
+  else{box.className='status-box status-ok';box.innerHTML='✔ VIAGEM APROVADA';}
+}
+
+function getDados(){
+  var data=document.getElementById('data').value;
+  if(data){var p=data.split('-');data=p[2]+'/'+p[1]+'/'+p[0];}
+  return {
+    data:fmt(data),
+    origem:fmt(document.getElementById('origem').value),
+    destino:fmt(document.getElementById('destino').value),
+    veiculo:fmt(document.getElementById('veiculo').value),
+    saida:fmt(document.getElementById('saida').value),
+    chegada:fmt(document.getElementById('chegada').value),
+    parada:fmt(document.getElementById('parada').value),
+    ocupantes:fmt(document.getElementById('ocupantes').value)
+  };
+}
+
+function gerarPDF(){
+  var jsPDF=window.jspdf.jsPDF;
+  var doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  var W=210,mL=18,mR=18,cW=W-mL-mR;
+  var y=20;
+
+  doc.setFillColor(11,13,77);
+  doc.rect(0,0,W,297,'F');
+
+  doc.setFillColor(255,152,0);
+  doc.rect(0,0,W,38,'F');
+  doc.setTextColor(11,13,77);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(22);
+  doc.text('VIAGEM SEGURA',mL,16);
+  doc.setFontSize(9);
+  doc.text('SEGURANCA  |  MODERNIDADE  |  RAPIDEZ',mL,23);
+  doc.setFontSize(8);
+  doc.text('Checklist de Viagem Segura — Gerado automaticamente',mL,30);
+  doc.text('Data de geracao: '+new Date().toLocaleDateString('pt-BR'),mL,35);
+
+  y=50;
+  var dados=getDados();
+  doc.setFillColor(255,152,0);
+  doc.roundedRect(mL,y-5,cW,8,2,2,'F');
+  doc.setTextColor(11,13,77);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(9);
+  doc.text('DADOS DA VIAGEM',mL+3,y+0.5);
+  y+=10;
+
+  var campos=[
+    ['Data da viagem',dados.data],
+    ['Origem',dados.origem],
+    ['Destino',dados.destino],
+    ['Veiculo (modelo/placa)',dados.veiculo],
+    ['Hora de saida',dados.saida],
+    ['Hora estimada de chegada',dados.chegada],
+    ['Parada para almoco',dados.parada],
+    ['Quantidade de ocupantes',dados.ocupantes]
+  ];
+
+  campos.forEach(function(c,i){
+    doc.setFillColor(i%2===0?30:20,32,90);
+    doc.rect(mL,y-4,cW,7,'F');
+    doc.setTextColor(180,180,200);
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(8);
+    doc.text(c[0]+':',mL+2,y);
+    doc.setTextColor(255,255,255);
+    doc.setFont('helvetica','bold');
+    doc.text(c[1],mL+70,y);
+    y+=7;
+  });
+
+  y+=6;
+  grupos.forEach(function(g){
+    if(y>260){doc.addPage();doc.setFillColor(11,13,77);doc.rect(0,0,210,297,'F');y=20;}
+    doc.setFillColor(255,152,0);
+    doc.roundedRect(mL,y-5,cW,8,2,2,'F');
+    doc.setTextColor(11,13,77);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(9);
+    doc.text(g.titulo.toUpperCase(),mL+3,y+0.5);
+    y+=10;
+
+    g.itens.forEach(function(item,i){
+      if(y>270){doc.addPage();doc.setFillColor(11,13,77);doc.rect(0,0,210,297,'F');y=20;}
+      var r=res[item]||'nao respondido';
+      var status=r==='sim'?'OK':r==='nao'?'PENDENTE':'—';
+      var cor=r==='sim'?[76,175,80]:r==='nao'?[230,81,0]:[100,100,120];
+      doc.setFillColor(i%2===0?30:20,32,90);
+      doc.rect(mL,y-4,cW,7,'F');
+      doc.setTextColor(200,200,220);
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(8);
+      doc.text(nomes[item],mL+2,y);
+      doc.setFillColor(cor[0],cor[1],cor[2]);
+      doc.roundedRect(mL+cW-22,y-3.5,20,5.5,1,1,'F');
+      doc.setTextColor(255,255,255);
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(7);
+      doc.text(status,mL+cW-12,y,{align:'center'});
+      y+=7;
+    });
+    y+=4;
+  });
+
+  if(y>260){doc.addPage();doc.setFillColor(11,13,77);doc.rect(0,0,210,297,'F');y=20;}
+  var criticos=['doc','cnh','freio','pneu'];
+  var pendente=false;
+  criticos.forEach(function(c){if(res[c]==='nao')pendente=true;});
+  var statusFinal=pendente?'REVISAR ITENS DE SEGURANCA':'VIAGEM APROVADA';
+  var corFinal=pendente?[198,40,40]:[27,142,62];
+  doc.setFillColor(corFinal[0],corFinal[1],corFinal[2]);
+  doc.roundedRect(mL,y,cW,14,3,3,'F');
+  doc.setTextColor(255,255,255);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(12);
+  doc.text((pendente?'! ':'✓ ')+statusFinal,W/2,y+9,{align:'center'});
+  y+=22;
+
+  doc.setFillColor(255,152,0);
+  doc.roundedRect(mL,y,cW,18,2,2,'F');
+  doc.setTextColor(11,13,77);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(8);
+  doc.text('LEMBRETE IMPORTANTE',W/2,y+6,{align:'center'});
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(7.5);
+  var lembrete='Em rodovias de pista simples, a paciencia e o planejamento previo sao suas melhores ferramentas de seguranca.';
+  var linhas=doc.splitTextToSize(lembrete,cW-6);
+  doc.text(linhas,W/2,y+11,{align:'center'});
+
+  doc.save('checklist-viagem-segura.pdf');
+}
+
+function abrirGmail(){
+  var dados=getDados();
+  var criticos=['doc','cnh','freio','pneu'];
+  var pendente=false;
+  criticos.forEach(function(c){if(res[c]==='nao')pendente=true;});
+  var statusFinal=pendente?'⚠ REVISAR ITENS':'✔ VIAGEM APROVADA';
+  var assunto=encodeURIComponent('Checklist Viagem Segura — '+dados.origem+' → '+dados.destino+' | '+dados.data);
+  var corpo='Checklist de Viagem Segura\n\n';
+  corpo+='DADOS DA VIAGEM\n';
+  corpo+='Data: '+dados.data+'\n';
+  corpo+='Origem: '+dados.origem+'\n';
+  corpo+='Destino: '+dados.destino+'\n';
+  corpo+='Veiculo: '+dados.veiculo+'\n';
+  corpo+='Saida: '+dados.saida+' | Chegada: '+dados.chegada+'\n';
+  corpo+='Ocupantes: '+dados.ocupantes+'\n\n';
+  grupos.forEach(function(g){
+    corpo+=g.titulo.toUpperCase()+'\n';
+    g.itens.forEach(function(item){
+      var r=res[item]||'nao respondido';
+      var status=r==='sim'?'[OK]':r==='nao'?'[PENDENTE]':'[-]';
+      corpo+=status+' '+nomes[item]+'\n';
+    });
+    corpo+='\n';
+  });
+  corpo+='RESULTADO FINAL: '+statusFinal+'\n\n';
+  corpo+='* Arquivo PDF em anexo (baixe antes de enviar)\n';
+  corpo+='Gerado pelo app Viagem Segura';
+  var link='mailto:roseescola70@gmail.com'
++'?subject='+assunto
++'&body='+encodeURIComponent(corpo);
+
+window.location.href=link;
+}
+
+function novo(){
+  res={};
+  document.querySelectorAll('.resposta').forEach(function(el){el.innerHTML='';el.classList.remove('show');});
+  document.querySelectorAll('input').forEach(function(el){el.value='';});
+  document.querySelectorAll('[id^="campo"]').forEach(function(el){el.style.display='none';});
+  ir(1);
+}
+</script>
